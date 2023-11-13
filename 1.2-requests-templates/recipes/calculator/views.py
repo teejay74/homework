@@ -1,4 +1,6 @@
+from django.http import HttpResponse
 from django.shortcuts import render
+from flask import json
 
 DATA = {
     'omlet': {
@@ -19,12 +21,23 @@ DATA = {
     # можете добавить свои рецепты ;)
 }
 
-# Напишите ваш обработчик. Используйте DATA как источник данных
-# Результат - render(request, 'calculator/index.html', context)
-# В качестве контекста должен быть передан словарь с рецептом:
-# context = {
-#   'recipe': {
-#     'ингредиент1': количество1,
-#     'ингредиент2': количество2,
-#   }
-# }
+def calculate_recipe(request, dish):
+    servings = request.GET.get('servings', 1)
+
+    recipe = DATA.get(dish, {}).copy()
+
+    try:
+        servings = int(servings)
+    except ValueError:
+        servings = 1
+
+    for ingredient, amount in recipe.items():
+        recipe[ingredient] = amount * servings
+
+    context = {
+        'recipe': recipe
+    }
+
+    return render(request, 'calculator/index.html', context)
+
+
